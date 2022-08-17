@@ -281,33 +281,47 @@ window.addEventListener("load", function() {
     oReq.addEventListener("load", reqListener);
     oReq.open("GET", "https://www.random.org/strings/?num=1&len=10&digits=on&unique=on&format=plain&rnd=new");
     oReq.send();
-    Swal.fire({
-        title: 'Marine Math',
-        text: 'Choose a facts category.',
-        input: 'select',
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        inputOptions: {
-            '5': 'Facts to 5',
-            '10': 'Facts to 10',
-        }
-    }).then(function(result) {
-        let values = result.value;
-        maxResultSize = parseInt(values);
-        let suffix = ' (to ' + maxResultSize + ')';
-        Swal.fire({
+    var factsPromise;
+    var providedFacts = getParameterByName("factscategory");
+    if(providedFacts != null)
+        factsPromise = Promise.resolve({ value: providedFacts });
+    else
+        factsPromise = Swal.fire({
             title: 'Marine Math',
-            text: 'Choose a game mode.',
+            text: 'Choose a facts category.',
             input: 'select',
             allowOutsideClick: false,
             allowEscapeKey: false,
             inputOptions: {
-                'add': 'Addition' + suffix,
-                'subtract': 'Subtraction' + suffix,
-                'multiply': 'Multiplication' + suffix,
-                'divide': 'Division' + suffix,
+                '5': 'Facts to 5',
+                '10': 'Facts to 10',
             }
-        }).then(function(result) {
+        });
+    
+    factsPromise.then(function(result) {
+        let values = result.value;
+        maxResultSize = parseInt(values);
+        let suffix = ' (to ' + maxResultSize + ')';
+        var operationPromise;
+        var providedOperation = operation;
+        if(providedOperation != null)
+            operationPromise = Promise.resolve({ value: providedOperation });
+        else
+            operationPromise = Swal.fire({
+                title: 'Marine Math',
+                text: 'Choose a game mode.',
+                input: 'select',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                inputOptions: {
+                    'add': 'Addition' + suffix,
+                    'subtract': 'Subtraction' + suffix,
+                    'multiply': 'Multiplication' + suffix,
+                    'divide': 'Division' + suffix,
+                }
+            });
+        
+        operationPromise.then(function(result) {
             operation = result.value;
             window.generateMathQuestions(operation, maxResultSize);
             newQuestion(0);
